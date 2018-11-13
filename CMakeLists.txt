@@ -20,6 +20,7 @@ find_package(catkin REQUIRED
         sensor_msgs
         image_transport
         cv_bridge
+        roslib
         )
 
 ## System dependencies are found with CMake's conventions

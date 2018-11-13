@@ -54,6 +54,7 @@
   <depend>sensor_msgs</depend>
   <depend>image_transport</depend>
   <depend>cv_bridge</depend>
+  <depend>roslib</depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
