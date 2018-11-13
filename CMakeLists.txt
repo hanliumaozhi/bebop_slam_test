@@ -4,17 +4,38 @@ project(bebop_slam)
 
 set(ORB_PATH $ENV{ORB_PATH})
 
+MESSAGE("ORB PATH: " ${ORB_PATH})
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall  -O3 -march=native")
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED
+        tf
+        roscpp
+        sensor_msgs
+        image_transport
+        cv_bridge
+        )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+
+find_package(OpenCV 3.0 QUIET)
+if(NOT OpenCV_FOUND)
+    find_package(OpenCV 2.4.3 QUIET)
+    if(NOT OpenCV_FOUND)
+        message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
+    endif()
+endif()
+
+find_package(Eigen3 REQUIRED)
+find_package(Pangolin REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -115,10 +136,21 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+        include
 # ${catkin_INCLUDE_DIRS}
-)
+        ${PROJECT_SOURCE_DIR}
+        ${ORB_PATH}/
+        ${ORB_PATH}/include
+        ${Pangolin_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS})
 
+set(LIBS
+        ${OpenCV_LIBS}
+        ${EIGEN3_LIBS}
+        ${Pangolin_LIBRARIES}
+        ${ORB_PATH}/Thirdparty/DBoW2/lib/libDBoW2.so
+        ${ORB_PATH}/Thirdparty/g2o/lib/libg2o.so
+        ${ORB_PATH}/lib/libORB_SLAM2.so)
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/bebop_slam.cpp
@@ -132,7 +164,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/bebop_slam_node.cpp)
+add_executable(bebop_slam_node src/bebop_slam_node.cpp include/bebop_slam/ORBImage.h src/ORBImage.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -145,9 +177,9 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(bebop_slam_node
+        ${catkin_LIBRARIES}
+        ${LIBS})
 
 #############
 ## Install ##
